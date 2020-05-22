@@ -1,0 +1,15 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Search results
+{% endblock %}
+
+{% block body %}
+    <h1>Search results:</h1>
+
+    <ul class="form-group">
+        {% for book in books %}
+            <li>{{ book.title }} by {{ book.author }}, year: {{ book.year }}</li>
+        {% endfor %}
+    </ul>
+{% endblock %}
