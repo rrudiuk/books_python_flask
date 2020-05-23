@@ -4,10 +4,17 @@
 <div class="column is-4 is-offset-4">
     <h3 class="title">Login</h3>
     <div class="box">
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <div class="notification is-danger">
+                {{ messages[0] }}.</a>.
+            </div>
+        {% endif %}
+        {% endwith %}
         <form method="POST" action="/login">
             <div class="field form-group">
                 <div class="control">
-                    <input class="input is-large form-control" type="email" name="email" placeholder="Your Email" autofocus="">
+                    <input class="input is-large form-control" type="text" name="username" placeholder="Username" autofocus="">
                 </div>
             </div>
 

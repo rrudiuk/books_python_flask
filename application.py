@@ -29,6 +29,21 @@ def index():
 @app.route("/login'")
 def login():
     return render_template("login.html")
+# Handle login POSTed data
+@app.route('/login', methods=['POST'])
+def login_post():
+    username = request.form.get('username')
+    password = request.form.get('password')
+    remember = True if request.form.get('remember') else False
+
+    user = db.execute("SELECT * FROM users WHERE username = :username AND password = :password",
+     {"username": username, "password": password}).fetchone();
+
+    if not user:
+        flash('Please check your login details and try again.')
+        return redirect(url_for('login'))
+    # login code goes here
+    return redirect(url_for('search'))
 
 @app.route("/signup")
 def signup():
@@ -43,6 +58,7 @@ def signup_post():
     user = db.execute("SELECT * FROM users WHERE username = :username", {"username": username}).fetchone();
 
     if user:
+        # Flash message
         flash("Such username already exists")
         return redirect(url_for('signup'))
 
@@ -57,7 +73,7 @@ def logout():
     return 'Logout'
 
 
-@app.route("/search", methods=["POST"])
+@app.route("/search")
 def search():
     #res = requests.get("https://www.goodreads.com/book/review_counts.json", params={"key": "1Td50qJu7i4R1575N2pA", "isbns": "0441172717%2C0141439602"})
     #print(res.json())
