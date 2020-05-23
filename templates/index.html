@@ -2,22 +2,21 @@
 {% extends "layout.html" %}
 
 {% block title %}
-    Books
+    Welcome
 {% endblock %}
 
 {% block body %}
-    <h1>Search for a book</h1>
+    <h1>Welcome to the library</h1>
 
-    <form action="{{ url_for('book') }}" method="post">
+    <main class="container">
+        <ul>
+            <li><a href="{{ url_for('index') }}" class="navbar-item">Home</a></li>
+            <li><a href="{{ url_for('login') }}" class="navbar-item">Login</a></li>
+            <li><a href="{{ url_for('signup') }}" class="navbar-item">Sign Up</a></li>           
+            <li><a href="{{ url_for('logout') }}" class="navbar-item">Log out</a></li>
+            <li><a href="{{ url_for('search') }}" class="navbar-item">Search books</a></li>
+        </ul>
+    </main>
 
-        <h3>Search by book title</h3>
-        <div class="form-group">
-            <input class="form-control" name="search" placeholder="Search book">
-        </div>
-
-        <div class="form-group">
-            <button class="btn btn-primary">Search book</button>
-        </div>
-
-    </form>
+    
 {% endblock %}
