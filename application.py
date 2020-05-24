@@ -61,6 +61,7 @@ def signup_post():
 @app.route("/login'")
 def login():
     return render_template("login.html")
+    
 # Handle login POSTed data
 @app.route('/login', methods=['POST'])
 def login_post():
@@ -92,7 +93,7 @@ def logout():
 @app.route("/search", methods=["GET"])
 def search():
     if session.get("logged_in"):
-        return render_template("search.html", user_id=session["user_id"][0])
+        return render_template("search.html")
     else:
         return render_template("error.html", message="Please log in to access this page")
 
@@ -106,8 +107,8 @@ def books():
     # Get form information.
     search = request.form.get("search")
     # Request books from DB according to the search query
-    books_list = db.execute("SELECT * FROM books WHERE title = :search or author = :search or isnb = :search", 
-        {"search": search}).fetchall()
+    books_list = db.execute("SELECT * FROM books WHERE title LIKE :search or author LIKE :search or isnb LIKE :search", 
+        {"search": "%" + search + "%"}).fetchall()
     # If nothing was found show the relevant page
     if len(books_list) == 0:
         return render_template("nothing_found.html", message="Nothing was found according to your search request.")
@@ -122,17 +123,22 @@ def book(book_id):
     if book is None:
         return render_template("error.html", message="No such book... :(")
 
-    reviews = []
+    # Goodreads rating
+    rating = requests.get("https://www.goodreads.com/book/review_counts.json", 
+        params={"key": "1Td50qJu7i4R1575N2pA", "isbns": book.isnb}).json()
 
-    reviews = db.execute("SELECT review, score, user_id FROM reviews WHERE book_id = :book_id", {"book_id": book_id}).fetchall()
+    ratings = []
+    ratings.append(rating["books"][0]["ratings_count"])
+    ratings.append(rating["books"][0]["average_rating"])
 
+    # Get reviews from our site and join with usernames
     all_reviews = db.execute("SELECT * FROM reviews JOIN users ON (reviews.user_id = users.id) WHERE book_id = :book_id",
         {"book_id": book_id}).fetchall()
 
-    if len(reviews) > 0:
-        return render_template("book.html", book=book, reviews=all_reviews)
+    if all_reviews:
+        return render_template("book.html", book=book, reviews=all_reviews, rating=ratings)
     else:
-        return render_template("book.html", book=book)
+        return render_template("book.html", book=book, rating=ratings)
 
 @app.route("/review/<int:book_id>", methods=["POST"])
 def review(book_id):
@@ -151,7 +157,3 @@ def review(book_id):
     return redirect(url_for("book", book_id=book_id))
 
 app.run()
-
-#res = requests.get("https://www.goodreads.com/book/review_counts.json", params={"key": "1Td50qJu7i4R1575N2pA", "isbns": "0441172717%2C0141439602"})
-    #print(res.json())
-    #books = db.execute("SELECT * FROM books").fetchall()

@@ -12,6 +12,11 @@
         <li>Author: {{ book.author }}</li>
         <li>Year: {{ book.year}}</li>
         <li>ISNB: {{ book.isnb}}</li>
+        {% if rating %}
+        <li>
+            Goodreads rating: {{ rating[1] }} ({{ rating[0] }})
+        </li>
+        {% endif %}
     </ul>
 
     <h3>Reviews:</h3>
