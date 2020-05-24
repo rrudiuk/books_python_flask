@@ -93,8 +93,8 @@ def search():
     else:
         return render_template("error.html", message="Please log in to access this page")
 
-@app.route("/book", methods=["POST"])
-def book():
+@app.route("/search", methods=["POST"])
+def books():
     """Search a book"""
     
     # Create list to store search results
@@ -103,12 +103,25 @@ def book():
     # Get form information.
     search = request.form.get("search")
     # Request books from DB according to the search query
-    books_list = db.execute("SELECT title, author, year FROM books WHERE title = :search or author = :search or isnb = :search", {"search": search}).fetchall()
+    books_list = db.execute("SELECT * FROM books WHERE title = :search or author = :search or isnb = :search", 
+        {"search": search}).fetchall()
     # If nothing was found show the relevant page
     if len(books_list) == 0:
         return render_template("nothing_found.html", message="Nothing was found according to your search request.")
 
     return render_template("search_results.html", books=books_list)
+
+@app.route("/book/<int:book_id>")
+def book(book_id):
+    """Lists details about a single book."""
+
+    book = db.execute("SELECT * FROM books WHERE id = :id", {"id": book_id}).fetchone()
+    if book is None:
+        return render_template("error.html", message="No such book... :(")
+
+    return render_template("book.html", book=book)
+
+app.run()
 
 #res = requests.get("https://www.goodreads.com/book/review_counts.json", params={"key": "1Td50qJu7i4R1575N2pA", "isbns": "0441172717%2C0141439602"})
     #print(res.json())

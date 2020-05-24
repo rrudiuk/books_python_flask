@@ -9,7 +9,11 @@
 
     <ul class="form-group">
         {% for book in books %}
-            <li>{{ book.title }} by {{ book.author }}, year: {{ book.year }}</li>
+            <li>
+            	<a href="{{ url_for('book', book_id=book.id) }}">
+            		{{ book.title }} by {{ book.author }}, year: {{ book.year }}
+            	</a>
+        	</li>
         {% endfor %}
     </ul>
 {% endblock %}
