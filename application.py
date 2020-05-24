@@ -1,6 +1,6 @@
 import os
 
-from flask import Flask, Blueprint, session, render_template, request, redirect, url_for, flash
+from flask import Flask, session, render_template, request, redirect, url_for, flash
 from flask_session import Session
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
@@ -127,8 +127,13 @@ def book(book_id):
         return render_template("error.html", message="No such book... :(")
 
     # Goodreads rating
-    rating = requests.get("https://www.goodreads.com/book/review_counts.json", 
-        params={"key": "1Td50qJu7i4R1575N2pA", "isbns": book.isnb}).json()
+    goodreads = requests.get("https://www.goodreads.com/book/review_counts.json", 
+        params={"key": "1Td50qJu7i4R1575N2pA", "isbns": book.isnb})
+
+    if goodreads.status_code != 200:
+        return render_template("error.html", message="404 error")
+
+    rating = goodreads.json()
 
     ratings = []
     ratings.append(rating["books"][0]["ratings_count"])
