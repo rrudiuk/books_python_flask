@@ -6,6 +6,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
 import requests
 
+from werkzeug.security import check_password_hash, generate_password_hash
+
 app = Flask(__name__)
 
 # Check for environment variable
@@ -26,25 +28,6 @@ def index():
 
     return render_template("index.html")
 
-@app.route("/login'")
-def login():
-    return render_template("login.html")
-# Handle login POSTed data
-@app.route('/login', methods=['POST'])
-def login_post():
-    username = request.form.get('username')
-    password = request.form.get('password')
-    remember = True if request.form.get('remember') else False
-
-    user = db.execute("SELECT * FROM users WHERE username = :username AND password = :password",
-     {"username": username, "password": password}).fetchone();
-
-    if not user:
-        flash('Please check your login details and try again.')
-        return redirect(url_for('login'))
-    # login code goes here
-    return redirect(url_for('search'))
-
 @app.route("/signup")
 def signup():
     return render_template("signup.html")
@@ -62,23 +45,53 @@ def signup_post():
         flash("Such username already exists")
         return redirect(url_for('signup'))
 
+    # Hash user's password to store in DB
+    hashedPassword = generate_password_hash(request.form.get("password"), method="pbkdf2:sha256", salt_length=8)
+
     new_user = db.execute("INSERT INTO users (username, name, password) VALUES (:username, :name, :password)",
-            {"username": username, "name": name, "password": password})
+            {"username": username, "name": name, "password": hashedPassword})
     db.commit()
+
+    session["user_name"] = username
+    session["logged_in"] = True
     # code to validate and add user to database goes here
-    return redirect(url_for('login'))
+    return redirect(url_for('search'))
+
+@app.route("/login'")
+def login():
+    return render_template("login.html")
+# Handle login POSTed data
+@app.route('/login', methods=['POST'])
+def login_post():
+    username = request.form.get('username')
+    password = request.form.get('password')
+    remember = True if request.form.get('remember') else False
+
+    user = db.execute("SELECT * FROM users WHERE username = :username", {"username": username}).fetchone();
+
+    if not user or not check_password_hash(user[3], password):
+        flash('Please check your login details and try again.')
+        return redirect(url_for('login'))
+    # if the above check passes, then we know the user has the right credentials
+    # login code goes here
+    else:
+        session["user_name"] = username
+        session["logged_in"] = True
+        return redirect(url_for('search'))
 
 @app.route("/logout")
 def logout():
-    return 'Logout'
+    session["user_name"] = None
+    session["logged_in"] = False
+    session.clear()
+    return render_template("index.html")
 
-
-@app.route("/search")
+@app.route("/search", methods=["GET"])
 def search():
-    #res = requests.get("https://www.goodreads.com/book/review_counts.json", params={"key": "1Td50qJu7i4R1575N2pA", "isbns": "0441172717%2C0141439602"})
-    #print(res.json())
-    #books = db.execute("SELECT * FROM books").fetchall()
-    return render_template("search.html")
+    if session.get("logged_in"):
+        return render_template("search.html")
+    else:
+        return render_template("error.html", message="Please log in to access this page")
 
 @app.route("/book", methods=["POST"])
 def book():
