@@ -6,6 +6,8 @@
 {% endblock %}
 
 {% block body %}
+
+    Hello {{ user_id }}
     <h1>Search for a book</h1>
 
     <form action="{{ url_for('books') }}" method="post">

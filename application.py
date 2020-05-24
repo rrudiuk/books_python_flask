@@ -54,6 +54,7 @@ def signup_post():
 
     session["user_name"] = username
     session["logged_in"] = True
+    session["user_id"] = db.execute("SELECT id FROM users WHERE username = :username", {"username": username}).fetchone();
     # code to validate and add user to database goes here
     return redirect(url_for('search'))
 
@@ -77,19 +78,21 @@ def login_post():
     else:
         session["user_name"] = username
         session["logged_in"] = True
+        session["user_id"] = db.execute("SELECT id FROM users WHERE username = :username", {"username": username}).fetchone();
         return redirect(url_for('search'))
 
 @app.route("/logout")
 def logout():
     session["user_name"] = None
     session["logged_in"] = False
+    session["user_id"] = None
     session.clear()
     return render_template("index.html")
 
 @app.route("/search", methods=["GET"])
 def search():
     if session.get("logged_in"):
-        return render_template("search.html")
+        return render_template("search.html", user_id=session["user_id"][0])
     else:
         return render_template("error.html", message="Please log in to access this page")
 
@@ -111,7 +114,7 @@ def books():
 
     return render_template("search_results.html", books=books_list)
 
-@app.route("/book/<int:book_id>")
+@app.route("/book/<int:book_id>", methods=["GET"])
 def book(book_id):
     """Lists details about a single book."""
 
@@ -119,7 +122,33 @@ def book(book_id):
     if book is None:
         return render_template("error.html", message="No such book... :(")
 
-    return render_template("book.html", book=book)
+    reviews = []
+
+    reviews = db.execute("SELECT review, score, user_id FROM reviews WHERE book_id = :book_id", {"book_id": book_id}).fetchall()
+
+    all_reviews = db.execute("SELECT * FROM reviews JOIN users ON (reviews.user_id = users.id) WHERE book_id = :book_id",
+        {"book_id": book_id}).fetchall()
+
+    if len(reviews) > 0:
+        return render_template("book.html", book=book, reviews=all_reviews)
+    else:
+        return render_template("book.html", book=book)
+
+@app.route("/review/<int:book_id>", methods=["POST"])
+def review(book_id):
+    review_score = request.form.get('score')
+    review_review = request.form.get('review')
+    review_user = session["user_id"][0]
+    review_book = book_id
+
+    if len(db.execute("SELECT * FROM reviews WHERE user_id = :user_id", {"user_id": review_user}).fetchall()) > 0:
+        return render_template("error.html", message="This user already posted a review")
+
+    new_review = db.execute("INSERT INTO reviews (book_id, user_id, review, score) VALUES (:book_id, :user_id, :review, :score)",
+        {"book_id": review_book, "user_id": review_user, "review": review_review, "score": review_score})
+    db.commit()
+
+    return redirect(url_for("book", book_id=book_id))
 
 app.run()
 

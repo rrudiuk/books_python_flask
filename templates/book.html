@@ -10,8 +10,40 @@
     <ul>
         <li>Title: {{ book.title }}</li>
         <li>Author: {{ book.author }}</li>
-        <li>Year: {{ book.year}} minutes</li>
-        <li>ISNB: {{ book.isnb}} minutes</li>
+        <li>Year: {{ book.year}}</li>
+        <li>ISNB: {{ book.isnb}}</li>
     </ul>
+
+    <h3>Reviews:</h3>
+
+    <ul>
+        {% for review in reviews %}
+            <li>{{ review.username }}. Score: {{ review.score }}.</br>
+            Review: {{ review.review }}</li>
+        {% endfor %}
+    </ul>
+
+    <h3>Add review</h3>
+
+    <form method="POST" action="{{ url_for('review', book_id=book.id) }}">
+
+            <div class="form-group">
+                <select class="form-control" name="score">
+                    <option value=1>1</option>
+                    <option value=2>2</option>
+                    <option value=3>3</option>
+                    <option value=4>4</option>
+                    <option value=5>5</option>
+                </select>
+            </div>
+
+            <div class="field form-group">
+                <div class="control">
+                    <input class="input is-large form-control" type="textbox" name="review" placeholder="Comment">
+                </div>
+            </div>
+
+            <button class="btn btn-primary button is-block is-info is-large is-fullwidth">Add Review</button>
+        </form>
 
 {% endblock %}
