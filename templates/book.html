@@ -23,8 +23,11 @@
 
     <ul>
         {% for review in reviews %}
-            <li>{{ review.username }}. Score: {{ review.score }}.</br>
-            Review: {{ review.review }}</li>
+            <li>
+                User: {{ review.username }}</br>
+                Score: {{ review.score }}</br>
+                Review: {{ review.review }}
+            </li>
         {% endfor %}
     </ul>
 

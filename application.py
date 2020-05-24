@@ -61,7 +61,7 @@ def signup_post():
 @app.route("/login'")
 def login():
     return render_template("login.html")
-    
+
 # Handle login POSTed data
 @app.route('/login', methods=['POST'])
 def login_post():
@@ -119,6 +119,9 @@ def books():
 def book(book_id):
     """Lists details about a single book."""
 
+    if not session.get("logged_in"):
+        return render_template("error.html", message="Please log in to access this page")
+
     book = db.execute("SELECT * FROM books WHERE id = :id", {"id": book_id}).fetchone()
     if book is None:
         return render_template("error.html", message="No such book... :(")
@@ -147,7 +150,8 @@ def review(book_id):
     review_user = session["user_id"][0]
     review_book = book_id
 
-    if len(db.execute("SELECT * FROM reviews WHERE user_id = :user_id", {"user_id": review_user}).fetchall()) > 0:
+    if len(db.execute("SELECT * FROM reviews WHERE user_id = :user_id AND book_id = :book_id", 
+        {"user_id": review_user, "book_id": book_id}).fetchall()) > 0:
         return render_template("error.html", message="This user already posted a review")
 
     new_review = db.execute("INSERT INTO reviews (book_id, user_id, review, score) VALUES (:book_id, :user_id, :review, :score)",
