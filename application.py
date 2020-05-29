@@ -1,6 +1,6 @@
 import os
 
-from flask import Flask, session, render_template, request, redirect, url_for, flash
+from flask import Flask, session, render_template, request, redirect, url_for, flash, jsonify
 from flask_session import Session
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
@@ -164,5 +164,27 @@ def review(book_id):
     db.commit()
 
     return redirect(url_for("book", book_id=book_id))
+
+@app.route("/api/book/<isnb>", methods=["GET"])
+def book_api(isnb):
+
+    """Return details about a single book."""
+    # Make sure that the book exists
+    book = db.execute("SELECT * FROM books WHERE isnb = :isnb", {"isnb": isnb}).fetchone()
+
+    if book is None:
+        return jsonify({"error": "Invalid book isnb"}), 422
+
+    review_count = db.execute("SELECT COUNT(*) FROM reviews WHERE book_id = :book_id", {"book_id": book.id}).scalar()
+    average = db.execute("SELECT AVG(score) a_avg FROM reviews WHERE book_id = :book_id", {"book_id": book.id}).fetchone()
+
+    return jsonify({
+        "title": book.title,
+        "author": book.author,
+        "year": book.year,
+        "isnb": book.isnb,
+        "review_count": review_count,
+        "average_score": float(average.a_avg)
+        })
 
 app.run()
