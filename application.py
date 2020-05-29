@@ -178,13 +178,23 @@ def book_api(isnb):
     review_count = db.execute("SELECT COUNT(*) FROM reviews WHERE book_id = :book_id", {"book_id": book.id}).scalar()
     average = db.execute("SELECT AVG(score) a_avg FROM reviews WHERE book_id = :book_id", {"book_id": book.id}).fetchone()
 
-    return jsonify({
-        "title": book.title,
-        "author": book.author,
-        "year": book.year,
-        "isnb": book.isnb,
-        "review_count": review_count,
-        "average_score": float(average.a_avg)
+    if average.a_avg is None:
+        return jsonify({
+            "title": book.title,
+            "author": book.author,
+            "year": book.year,
+            "isnb": book.isnb,
+            "review_count": review_count,
+        })
+
+    else:
+        return jsonify({
+            "title": book.title,
+            "author": book.author,
+            "year": book.year,
+            "isnb": book.isnb,
+            "review_count": review_count,
+            "average_score": float(average.a_avg)
         })
 
 app.run()
