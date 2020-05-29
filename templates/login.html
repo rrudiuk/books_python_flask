@@ -6,30 +6,24 @@
     <div class="box">
         {% with messages = get_flashed_messages() %}
         {% if messages %}
-            <div class="notification is-danger">
+            <div>
                 {{ messages[0] }}.</a>.
             </div>
         {% endif %}
         {% endwith %}
         <form method="POST" action="/login">
-            <div class="field form-group">
+            <div class="form-group">
                 <div class="control">
-                    <input class="input is-large form-control" type="text" name="username" placeholder="Username" autofocus="">
+                    <input class="form-control" type="text" name="username" placeholder="Username" autofocus="">
                 </div>
             </div>
 
-            <div class="field form-group">
+            <div class="form-group">
                 <div class="control">
-                    <input class="input is-large form-control" type="password" name="password" placeholder="Your Password">
+                    <input class="form-control" type="password" name="password" placeholder="Your Password">
                 </div>
             </div>
-            <div class="field form-group">
-                <label class="checkbox">
-                    <input type="checkbox">
-                    Remember me
-                </label>
-            </div>
-            <button class="btn btn-primary button is-block is-info is-large is-fullwidth">Login</button>
+            <button class="btn btn-primary">Login</button>
         </form>
     </div>
 </div>
